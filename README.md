@@ -1,2 +1,2 @@
 # Entertainment-Emporium
-Project created in Coventry University for the web development module. 
+Entertainment Emprorium is a film and tv web application built using javascript for Coventry University. The backend consists of a koa API where as the front end was built using React with ant.design components. This project is uploaded to my github to display a small part of coursework I completed in my time at University. This project is not currently set up to be able to run as no further work will be completed. However, there is a demonstration video if you would like to see how the web application operated. 
