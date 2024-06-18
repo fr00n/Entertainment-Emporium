@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routes/movies.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: routes/movies.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * API module for handling requests to the movie resource
+ * @module routes/movies
+ * @author Francesca Passmore
+ * @see schemas/* for JSON Schema definition files
+ */
+const Router = require('koa-router');
+const bodyParser = require('koa-bodyparser');
+const model = require('../models/movies')
+const auth = require('../controllers/auth');
+const can = require('../permissions/movies');
+const CustomError = require('../helpers/customError');
+const {validateMovie} = require('../controllers/validation');
+
+
+const router = Router({prefix: '/api/v1/movies'});
+
+/** Router to get a movie by its id  */
+router.get('/:id([0-9]{1,})', getById);
+
+/** Router to create a movie */
+router.post('/', bodyParser(),validateMovie, auth, createMovie);
+
+/** Router to update a movie */
+router.put('/:id([0-9]{1,})', auth, bodyParser(), updateMovie);
+
+/** Router to delete a movie */
+router.del('/:id([0-9]{1,})', auth, deleteMovie);
+
+/** Router to get movies with pagination  */
+router.get('/:page([0-9]{1,})/:limit([0-9]{1,})/:column/:order', getFilteredMovies);
+
+/** Router to get movies by their titles  */
+router.get('/:title', getByTitle);
+
+/**
+ * Function find a movie by its id from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns movie found 
+ */
+async function getById(ctx) {
+    try {
+        let id = ctx.params.id;
+        let movie = await model.getById(id);
+        if (movie.length) {
+            ctx.body = movie[0];
+        }
+    }catch (error) {
+        console.error('Error during movie fetch by id:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+}
+
+/**
+ * Function find a movie by its title from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns movies found 
+ */
+async function getByTitle(ctx) {
+    try{
+        let movies = await model.getByTitle(ctx.params.title);
+        if (movies.length) {
+            ctx.body = movies;
+        }
+    }catch (error) {
+        console.error('Error during movie fetch by title:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+}
+
+/**
+ * Function finds movies with paginatiom from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns movies found 
+ */
+async function getFilteredMovies(ctx) {
+    try {
+        const page = ctx.params.page
+        const limit = ctx.params.limit
+        const column = ctx.params.column;
+        const order = ctx.params.order;
+        let movies = await model.getFilteredMovies(page, limit, column, order);
+        let count = await model.getCountForMovie();
+
+        count = count[0].count;
+
+        let response = {
+            movies,
+            "count": count,
+            "page": page,
+            "limit": limit
+        }
+        if (movies.length) {
+            ctx.body = response;
+            ctx.status = 200;
+        }
+    }catch (error) {
+        console.error('Error during movie fetch with pagination:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+}
+
+/**
+ * Function creates a movie from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns success message on creation
+ * @throws {CustomError} custom error based on failure
+ */
+async function createMovie(ctx) {
+    try {
+        const permission = can.create(ctx.state.user, ctx.params);
+        if (!permission.granted) {
+            throw new CustomError('You are forbidden to create movies', 403);
+        } else {
+            let movie = ctx.request.body;
+            let createMovie = await model.createMovie(movie);
+            if (createMovie) {
+                ctx.body = {message: "Movie Creation Successful"}
+                ctx.body = 200
+            }
+        }
+    } catch (error) {
+        console.error('Error during movie creation:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+
+}
+
+/**
+ * Function updates a movie from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns success message on update
+ * @throws {CustomError} custom error based on failure
+ */
+async function updateMovie(ctx) {
+    try {
+        const permission = can.update(ctx.state.user, ctx.params)
+        if (!permission.granted) {
+            throw new CustomError('You are forbidden to create movies', 403);
+        } else {
+            let id = ctx.params.id
+            const body = ctx.request.body;
+            let result = await model.updateMovie(id, body);
+            if (result) {
+                ctx.body = {message: "Movie Update Successful"}
+                ctx.body = 200
+            }
+        }
+    } catch (error) {
+        console.error('Error during movie creation:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+
+}
+
+/**
+ * Function deletes a movie from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns success message on deletion
+ * @throws {CustomError} custom error based on failure
+ */
+async function deleteMovie(ctx) {
+    try {
+        const permission = can.delete(ctx.state.user, ctx.params)
+        if (!permission.granted) {
+            throw new CustomError('You are forbidden to delete movies', 403);
+        } else {
+            let id = ctx.params.id
+            let deletion = await model.deleteMovie(id);
+            if (deletion) {
+                ctx.status = 201;
+                ctx.body = {message: 'movie deleted successfully'}
+            }
+        }
+    } catch (error) {
+        console.error('Error during movie creation:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+
+}
+
+
+module.exports = router;
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-controllers_auth.html">controllers/auth</a></li><li><a href="module-controllers_validation.html">controllers/validation</a></li><li><a href="module-helpers_calculator.html">helpers/calculator</a></li><li><a href="module-helpers_customError.html">helpers/customError</a></li><li><a href="module-helpers_database.html">helpers/database</a></li><li><a href="module-helpers_hash.html">helpers/hash</a></li><li><a href="module-index.html">index</a></li><li><a href="module-models_actors.html">models/actors</a></li><li><a href="module-models_directors.html">models/directors</a></li><li><a href="module-models_movieReviews.html">models/movieReviews</a></li><li><a href="module-models_movies.html">models/movies</a></li><li><a href="module-models_tv.html">models/tv</a></li><li><a href="module-models_tvReviews.html">models/tvReviews</a></li><li><a href="module-models_users.html">models/users</a></li><li><a href="module-permissions_actors.html">permissions/actors</a></li><li><a href="module-permissions_directors.html">permissions/directors</a></li><li><a href="module-permissions_movieReviews.html">permissions/movieReviews</a></li><li><a href="module-permissions_movies.html">permissions/movies</a></li><li><a href="module-permissions_tv.html">permissions/tv</a></li><li><a href="module-permissions_tvReviews.html">permissions/tvReviews</a></li><li><a href="module-permissions_users.html">permissions/users</a></li><li><a href="module-routes_actors.html">routes/actors</a></li><li><a href="module-routes_directors.html">routes/directors</a></li><li><a href="module-routes_login.html">routes/login</a></li><li><a href="module-routes_movieReviews.html">routes/movieReviews</a></li><li><a href="module-routes_movies.html">routes/movies</a></li><li><a href="module-routes_tv.html">routes/tv</a></li><li><a href="module-routes_tvReviews.html">routes/tvReviews</a></li><li><a href="module-routes_users.html">routes/users</a></li><li><a href="module-strategies_jwt.html">strategies/jwt</a></li></ul><h3>Classes</h3><ul><li><a href="module-helpers_customError-CustomError.html">CustomError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#port">port</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Mar 27 2024 21:04:50 GMT+0000 (GMT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

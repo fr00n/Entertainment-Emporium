@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routes/tvReviews.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: routes/tvReviews.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * API module for handling requests to the tvReview resource
+ * @module routes/tvReviews
+ * @author Francesca Passmore
+ * @see schemas/* for JSON Schema definition files
+ */
+const Router = require('koa-router');
+const bodyParser = require('koa-bodyparser');
+const model = require('../models/tvReviews')
+const tvModel = require('../models/tv')
+const auth = require('../controllers/auth');
+const can = require('../permissions/tvReviews');
+const CustomError = require('../helpers/customError');
+const {validateTvReview} = require('../controllers/validation');
+
+const router = Router({prefix: '/api/v1/tvReviews'});
+
+/** Router to get a tv reviews paginated by tv id  */
+router.get('/:id([0-9]{1,})/:page([0-9]{1,})/:limit([0-9]{1,})/:order', getByTvId);
+
+/** Router to create a tv review   */
+router.post('/', bodyParser(), validateTvReview, auth, createTvReview)
+
+/** Router to update a tv review   */
+router.put('/:id([0-9]{1,})', bodyParser(), auth, updateTvReview)
+
+/** Router to delete a tv review   */
+router.del('/:id([0-9]{1,})', auth, deleteTvReview)
+
+/** Router to get a tv review on a specific tv show by specific user  */
+router.get('/:username/:tvId([0-9]{1,})', getTvReviewBySpecificUser);
+
+
+
+/**
+ * Function find a tv review by its id from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns tv review found 
+ */
+async function getByTvId(ctx) {
+    try {
+        let id = ctx.params.id;
+        let count = await model.getCountForTvReview(ctx.params.id);
+        let reviews = await model.getByTvId(id, ctx.params.page, ctx.params.limit, ctx.params.order);
+        count = count[0].count;
+        let response = {
+            reviews,
+            "count": count,
+            "page": ctx.params.page,
+            "limit": ctx.params.limit
+        }
+        if (reviews.length) {
+            ctx.status = 200;
+            ctx.body = response;
+        }
+    }catch (error) {
+        console.error('Error during fetch:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+}
+
+/**
+ * Function finds tvReviews by their tv show and from a specific user from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns tvReviews found 
+ * @throws {CustomError} custom error based on failure
+ */
+async function getTvReviewBySpecificUser(ctx){
+    try{
+        let username = ctx.params.username;
+        let tvId = parseInt(ctx.params.tvId);
+        let review = await model.getTvReviewBySpecificUser(username, tvId);
+        if (review.length){
+            ctx.status = 200;
+            ctx.body = review;
+        } else {
+            throw new CustomError('User has not made review for this tv show', 404);
+        }
+    } catch (error) {
+        console.error('Error during fetch:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+}
+
+/**
+ * Function creates tvReview from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns success message on creation 
+ * @throws {CustomError} custom error based on failure
+ */
+async function createTvReview(ctx){
+    try{
+        const permission = can.create(ctx.state.user, ctx.params)
+        if (!permission.granted){
+            throw new CustomError('You are forbidden to create tv reviews', 403);
+        } else {
+            let tvReview = ctx.request.body;
+            tvReview.userId = ctx.state.user.id
+            if (ctx.state.user.role === "verified"){
+                tvReview.verified = 1;
+            } else {
+                tvReview.verified = 0;
+            }
+
+            tvReview.username = ctx.state.user.username
+            let createTvReview = await model.createTvReview(tvReview);
+            if (createTvReview){
+                let updateTvScore = await tvModel.calculateTvScore(tvReview.tvId);
+                ctx.body = {message : "Tv Review Creation Successful"}
+                ctx.status = 200;
+            }
+        }
+    }catch (error) {
+        console.error('Error during fetch:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+}
+
+/**
+ * Function updates tvReview from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns success message on update
+ * @throws {CustomError} custom error based on failure
+ */
+async function updateTvReview(ctx){
+    try{
+        //find the Tv review
+        let result = await model.getTvReview(ctx.params.id)
+        if (result.length !== 0){
+            const permission = can.update(ctx.state.user, result[0])
+            if (!permission.granted){
+                throw new CustomError('You are forbidden to update tv reviews', 403);
+            } else {
+                let tvReview = ctx.request.body;
+                let updateTvReview = await model.updateTvReview(tvReview, ctx.params.id)
+                if (updateTvReview){
+                    let updateTvScore = await tvModel.calculateTvScore(tvReview.tvId);
+                    ctx.body = {message: "Tv Review Updated Successfully"}
+                }
+            }
+        } else {
+            throw new CustomError('Tv review not found', 404);
+        }
+    }catch (error) {
+        console.error('Error during fetch:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+}
+
+/**
+ * Function deletes tvReview from API request 
+ * @param {object} ctx - Request information sent 
+ * @returns {object} - returns success message on deletion
+ * @throws {CustomError} custom error based on failure
+ */
+async function deleteTvReview(ctx){
+    try{
+        //find the Tv review
+        let result = await model.getTvReview(ctx.params.id)
+        if (result.length !== 0){
+            const permission = can.delete(ctx.state.user, result[0])
+            if (!permission.granted){
+                throw new CustomError('You are forbidden to update tv reviews', 403);
+            } else {
+                let tvId = result[0].tvId;
+                let deleteTvReview = await model.deleteTvReview(ctx.params.id)
+                if (deleteTvReview){
+                    let updateTvScore = await tvModel.calculateTvScore(tvId);
+                    ctx.status = 200;
+                    ctx.body = {message: "Tv Review Deleted Successfully"}
+                }
+            }
+        } else {
+            ctx.body = "Tv Review not found"
+        }
+    }catch (error) {
+        console.error('Error during fetch:', error);
+        ctx.body = {error: error.message}
+        ctx.status = error.statusCode;
+    }
+}
+
+module.exports = router;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-controllers_auth.html">controllers/auth</a></li><li><a href="module-controllers_validation.html">controllers/validation</a></li><li><a href="module-helpers_calculator.html">helpers/calculator</a></li><li><a href="module-helpers_customError.html">helpers/customError</a></li><li><a href="module-helpers_database.html">helpers/database</a></li><li><a href="module-helpers_hash.html">helpers/hash</a></li><li><a href="module-index.html">index</a></li><li><a href="module-models_actors.html">models/actors</a></li><li><a href="module-models_directors.html">models/directors</a></li><li><a href="module-models_movieReviews.html">models/movieReviews</a></li><li><a href="module-models_movies.html">models/movies</a></li><li><a href="module-models_tv.html">models/tv</a></li><li><a href="module-models_tvReviews.html">models/tvReviews</a></li><li><a href="module-models_users.html">models/users</a></li><li><a href="module-permissions_actors.html">permissions/actors</a></li><li><a href="module-permissions_directors.html">permissions/directors</a></li><li><a href="module-permissions_movieReviews.html">permissions/movieReviews</a></li><li><a href="module-permissions_movies.html">permissions/movies</a></li><li><a href="module-permissions_tv.html">permissions/tv</a></li><li><a href="module-permissions_tvReviews.html">permissions/tvReviews</a></li><li><a href="module-permissions_users.html">permissions/users</a></li><li><a href="module-routes_actors.html">routes/actors</a></li><li><a href="module-routes_directors.html">routes/directors</a></li><li><a href="module-routes_login.html">routes/login</a></li><li><a href="module-routes_movieReviews.html">routes/movieReviews</a></li><li><a href="module-routes_movies.html">routes/movies</a></li><li><a href="module-routes_tv.html">routes/tv</a></li><li><a href="module-routes_tvReviews.html">routes/tvReviews</a></li><li><a href="module-routes_users.html">routes/users</a></li><li><a href="module-strategies_jwt.html">strategies/jwt</a></li></ul><h3>Classes</h3><ul><li><a href="module-helpers_customError-CustomError.html">CustomError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#port">port</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Mar 27 2024 21:04:50 GMT+0000 (GMT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

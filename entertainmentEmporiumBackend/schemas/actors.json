@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "actor": {
+      "title": "Actor",
+      "description": "Data to register a new actor.",
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "description": "The first name of the actor",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "The last name of the actor",
+          "type": "string"
+        },
+        "avatarURL": {
+          "description": "Headshot of the actor",
+          "type": "string"
+        }
+      },
+      "required": ["firstName", "lastName", "avatarURL"],
+      "additionalProperties": false
+    },
+
+    "actorCreated": {
+      "$id": "#actorCreated",
+      "title": "Actor Created",
+      "description": "Confirmation of a successful actor update/creation",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "id of the new/updated actor record",
+          "type": "integer"
+        },
+        "updated": {
+          "description": "Boolean indicator of success",
+          "type": "boolean"
+        },
+        "link": {
+          "description": "Path to retrieve actor record",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

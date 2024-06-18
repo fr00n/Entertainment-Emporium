@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: permissions/movieReviews.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: permissions/movieReviews.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * A module to define permissions for CRUD actions on movieReview data 
+ * @module permissions/movieReviews
+ * @author Francesca Passmore
+ * @see schemas/* for JSON Schema definition files
+ */
+const AccessControl = require('role-acl');
+const ac = new AccessControl();
+
+ac.grant('user').execute('create').on('movieReview');
+ac.grant('user').condition({Fn:'EQUALS', args: {'requester':'$.owner'}}).execute('update').on('movieReview');
+ac.grant('user').condition({Fn:'EQUALS', args: {'requester':'$.owner'}}).execute('delete').on('movieReview');
+
+ac.grant('verified').execute('create').on('movieReview');
+ac.grant('verified').condition({Fn:'EQUALS', args: {'requester':'$.owner'}}).execute('update').on('movieReview');
+ac.grant('verified').condition({Fn:'EQUALS', args: {'requester':'$.owner'}}).execute('delete').on('movieReview');
+
+ac.grant('admin').execute('create').on('movieReview');
+ac.grant('admin').execute('delete').on('movieReview');
+ac.grant('admin').condition({Fn:'EQUALS', args: {'requester':'$.owner'}}).execute('update').on('movieReview');
+
+/**
+ * Function that determines requesters rights to update movieReview resource 
+ * @param {object} requester - The user making the request 
+ * @param {object} data - The movieReview that the user wants to update 
+ * @returns {object} - returns permission accepted or denied based on role of the user 
+ */
+exports.update = (requester, data) =>
+ac.can(requester.role).context({requester:requester.id, owner:data.userId}).execute('update').sync().on('movieReview');
+
+/**
+ * Function that determines requesters rights to delete movieReview resource 
+ * @param {object} requester - The user making the request 
+ * @param {object} data - The movieReview that the user wants to delete 
+ * @returns {object} - returns permission accepted or denied based on role of the user 
+ */
+exports.delete = (requester, data) =>
+  ac.can(requester.role).context({requester:requester.id, owner:data.userId}).execute('delete').sync().on('movieReview');
+
+/**
+ * Function that determines requesters rights to create movieReview resource 
+ * @param {object} requester - The user making the request 
+ * @param {object} data - The movieReview that the user wants to create
+ * @returns {object} - returns permission accepted or denied based on role of the user 
+ */
+exports.create = (requester, data) =>
+  ac.can(requester.role).context({requester:requester.id, owner:data.id}).execute('create').sync().on('movieReview');</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-controllers_auth.html">controllers/auth</a></li><li><a href="module-controllers_validation.html">controllers/validation</a></li><li><a href="module-helpers_calculator.html">helpers/calculator</a></li><li><a href="module-helpers_customError.html">helpers/customError</a></li><li><a href="module-helpers_database.html">helpers/database</a></li><li><a href="module-helpers_hash.html">helpers/hash</a></li><li><a href="module-index.html">index</a></li><li><a href="module-models_actors.html">models/actors</a></li><li><a href="module-models_directors.html">models/directors</a></li><li><a href="module-models_movieReviews.html">models/movieReviews</a></li><li><a href="module-models_movies.html">models/movies</a></li><li><a href="module-models_tv.html">models/tv</a></li><li><a href="module-models_tvReviews.html">models/tvReviews</a></li><li><a href="module-models_users.html">models/users</a></li><li><a href="module-permissions_actors.html">permissions/actors</a></li><li><a href="module-permissions_directors.html">permissions/directors</a></li><li><a href="module-permissions_movieReviews.html">permissions/movieReviews</a></li><li><a href="module-permissions_movies.html">permissions/movies</a></li><li><a href="module-permissions_tv.html">permissions/tv</a></li><li><a href="module-permissions_tvReviews.html">permissions/tvReviews</a></li><li><a href="module-permissions_users.html">permissions/users</a></li><li><a href="module-routes_actors.html">routes/actors</a></li><li><a href="module-routes_directors.html">routes/directors</a></li><li><a href="module-routes_login.html">routes/login</a></li><li><a href="module-routes_movieReviews.html">routes/movieReviews</a></li><li><a href="module-routes_movies.html">routes/movies</a></li><li><a href="module-routes_tv.html">routes/tv</a></li><li><a href="module-routes_tvReviews.html">routes/tvReviews</a></li><li><a href="module-routes_users.html">routes/users</a></li><li><a href="module-strategies_jwt.html">strategies/jwt</a></li></ul><h3>Classes</h3><ul><li><a href="module-helpers_customError-CustomError.html">CustomError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#port">port</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Mar 27 2024 21:04:50 GMT+0000 (GMT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

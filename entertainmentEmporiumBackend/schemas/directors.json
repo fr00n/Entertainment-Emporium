@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "director": {
+      "title": "Director",
+      "description": "Data to register a new director.",
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "description": "The first name of the director",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "The last name of the director",
+          "type": "string"
+        },
+        "avatarURL": {
+          "description": "Headshot of the director",
+          "type": "string"
+        }
+      },
+      "required": ["firstName", "lastName", "avatarURL"],
+      "additionalProperties": false
+    },
+
+    "directorCreated": {
+      "$id": "#directorCreated",
+      "title": "Director Created",
+      "description": "Confirmation of a successful director update/creation",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "id of the new/updated director record",
+          "type": "integer"
+        },
+        "updated": {
+          "description": "Boolean indicator of success",
+          "type": "boolean"
+        },
+        "link": {
+          "description": "Path to retrieve director record",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

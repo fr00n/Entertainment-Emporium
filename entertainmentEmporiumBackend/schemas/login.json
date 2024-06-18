@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "login": {
+      "title": "User Credentials",
+      "description": "Data to login a user",
+      "type": "object",
+      "properties": {
+        "username": {
+          "description": "Unique username of the user",
+          "type": "string"
+        },
+        "password": {
+          "description": "Password of user account",
+          "type": "string"
+        }
+      },
+      "required": ["username", "password"],
+      "additionalProperties": false
+    },
+
+    "userAuthenticated": {
+      "$id": "#userAuthenticated",
+      "title": "User Authenticated",
+      "description": "Confirmation of a successful user login",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "id of the new/updated user record",
+          "type": "integer"
+        },
+        "username": {
+          "description": "Username of user authenticated",
+          "type": "string"
+        },
+        "role": {
+          "description": "Role of the user authenticated",
+          "type": "string"
+        },
+        "token": {
+          "description": "JWT token generated of the user authenticated",
+          "type": "string"
+        },
+        "link": {
+          "description": "Path to retrieve user record",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}
+
+

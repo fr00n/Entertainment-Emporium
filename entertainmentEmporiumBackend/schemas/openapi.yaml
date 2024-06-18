@@ -1,0 +1,783 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Entertainment Emporium Backend API 
+  description: A movies and tv shows rating API 
+  contact:
+    name: Francesca 
+    email: passmoref@coventry.ac.uk
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+  - url: 'https://hexagonprofile-maximumalex-3000.codio-box.uk/api/v1'
+    description: Development server
+tags:
+  - name: Users
+    description: API endpoints for user management.
+  - name: Actors
+    description: API endpoints for actor management 
+  - name: Directors
+    description: API endpoints for director management 
+  - name: Login
+    description: API endpoints for logging in and authenticating user
+  - name: Movies
+    description: API endpoints for movie management 
+  - name: Tv
+    description: API endpoints for tv management 
+  - name: Movie Reviews
+    description: API endpoints for movie review management 
+  - name: Tv Reviews
+    description: API endpoints for tv review management 
+paths:
+  /users/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: Numeric id of the user
+    get:
+      tags:
+        - Users
+      description:
+        Get user by id.
+      responses:
+        '200':
+          description: View of a user’s record, excluding password.
+        '404':
+          description: User was not found in the DB.
+        '403':
+          description: Requester forbidden to view this resource
+    put:
+      tags:
+        - Users
+      description:
+        Update user by ID.
+      responses:
+        '200':
+          description: Update confirmation and link to record.
+        '404':
+          description: User was not found in the DB.
+        '401':
+          description: Users can only update their own accounts
+        '403':
+          description: Requester forbidden to update this resource
+
+    delete:
+      tags:
+        - Users
+      description:
+        Delete user by ID.
+      responses:
+        '200':
+          description: Delete confirmation.
+        '401':
+          description: Only admin users can delete user accounts.
+        '404':
+          description: User was not found in the DB.
+        '403':
+          description: Requester forbidden to delete this resource
+          
+  /users:
+    summary: Represents an individual user
+    description: >
+      This resource represents an individual user in the system.
+      Each user is identified by a numeric `id`.
+    post:
+      tags:
+        - Users
+      description:
+        Create a new user account.
+      requestBody:
+        description: All new user data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./users.json#/definitions/user
+      responses:
+        '200':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: ./users.json#/definitions/userCreated
+  /users/{username}:
+    parameters:
+      - in: path
+        name: username
+        schema:
+          type: string
+        required: true
+        description: The unique username of the user
+    get:
+      tags:
+        - Users
+      description:
+        Get user by username.
+      responses:
+        '200':
+          description: View of a user’s record, excluding password.
+        '404':
+          description: User was not found in the DB.
+        '403':
+          description: Requester forbidden to view this resource
+
+  /actors/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: Numeric id of the actor
+    get:
+      tags:
+        - Actors
+      description:
+        Get actor by id.
+      responses:
+        '200':
+          description: View of a actor's record.
+        '404':
+          description: Actor was not found in the DB.
+    put:
+      tags:
+        - Actors
+      description:
+        Update actor by ID.
+      responses:
+        '200':
+          description: Update confirmation.
+        '401':
+          description: Only admin users can update actors.
+        '404':
+          description: Actor was not found in the DB.
+        '403':
+          description: Requester forbidden to update this resource.
+
+    delete:
+      tags:
+        - Actors
+      description:
+        Delete actor by ID.
+      responses:
+        '200':
+          description: Delete confirmation.
+        '401':
+          description: Only admin users can delete actors.
+        '404':
+          description: Actor was not found in the DB.
+        '403':
+          description: Requester forbidden to delete this resource
+  /actors:
+    summary: Represents an individual actor
+    description: >
+      This resource represents an individual actor in the system.
+      Each actor is identified by a numeric `id`.
+    post:
+      tags:
+        - Actors
+      description:
+        Create a new actor.
+      requestBody:
+        description: All new actor data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./actors.json#/definitions/actor
+      responses:
+        '201':
+          description: Actor created
+          content:
+            application/json:
+              schema:
+                $ref: ./actors.json#/definitions/actorCreated
+  /actors/{actors}:
+    parameters:
+      - in: path
+        name: actors
+        schema:
+          type: string
+        required: true
+        description: A list of ids of actors e.g 1,2,3
+    get:
+      tags:
+        - Actors
+      description:
+        Get multiple actors
+      responses:
+        '200':
+          description: View of multiple actors.
+        '404':
+          description: Actors not found.
+  /actors/search/{name}:
+    parameters:
+      - in: path
+        name: name
+        schema:
+          type: string
+        required: true
+        description: Last name of an actor
+    get:
+      tags:
+        - Actors
+      description:
+        Get an actor by last name
+      responses:
+        '200':
+          description: View of actors with the last name searched.
+        '404':
+          description: Actors not found.
+
+  /directors/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: Numeric id of the director
+    get:
+      tags:
+        - Directors
+      description:
+        Get director by id.
+      responses:
+        '200':
+          description: View of a director's record.
+        '404':
+          description: Director was not found in the DB.
+    put:
+      tags:
+        - Directors
+      description:
+        Update director by ID.
+      responses:
+        '200':
+          description: Update confirmation
+        '401':
+          description: Only admin users can update directors.
+        '404':
+          description: Actor was not found in the DB.
+        '403':
+          description: Requester forbidden to update this resource.
+
+    delete:
+      tags:
+        - Directors
+      description:
+        Delete director by ID.
+      responses:
+        '200':
+          description: Delete confirmation.
+        '401':
+          description: Only admin users can delete directors.
+        '404':
+          description: Director was not found in the DB.
+        '403':
+          description: Requester forbidden to delete this resource
+
+  /directors:
+    summary: Represents an individual director
+    description: >
+      This resource represents an individual director in the system.
+      Each director is identified by a numeric `id`.
+    post:
+      tags:
+        - Directors
+      description:
+        Create a new director.
+      requestBody:
+        description: All new director data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./directors.json#/definitions/director
+      responses:
+        '201':
+          description: Actor created
+          content:
+            application/json:
+              schema:
+                $ref: ./directors.json#/definitions/directorCreated
+  /directors/{directors}:
+    parameters:
+      - in: path
+        name: directors
+        schema:
+          type: string
+        required: true
+        description: A list of ids of directors e.g 1,2,3
+    get:
+      tags:
+        - Directors
+      description:
+        Get multiple directors
+      responses:
+        '200':
+          description: View of multiple directors.
+        '404':
+          description: Directors not found.
+
+  /directors/search/{name}:
+    parameters:
+      - in: path
+        name: name
+        schema:
+          type: string
+        required: true
+        description: Last name of an director
+    get:
+      tags:
+        - Directors
+      description:
+        Get a director by last name
+      responses:
+        '200':
+          description: View of directors with the last name searched.
+        '404':
+          description: Directors not found.
+  
+  /login:
+    summary: End point to login and generate token for user 
+    description: >
+      This resource represents a login endpoint 
+      It generates a JWT token for the user credentials that are validated
+    post:
+      tags:
+        - Login
+      description:
+        Login user
+      requestBody:
+        description: User credentials.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./login.json#/definitions/login
+      responses:
+        '201':
+          description: User Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: ./login.json#/definitions/userAuthenticated
+  
+  /movies/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: Numeric id of the movie
+    get:
+      tags:
+        - Movies
+      description:
+        Get movie by id.
+      responses:
+        '200':
+          description: View of a Movie.
+        '404':
+          description: Movie was not found in the DB.
+      
+    put:
+      tags:
+        - Movies
+      description:
+        Update movie by ID.
+      responses:
+        '200':
+          description: Update confirmation and link to record.
+        '404':
+          description: Movie was not found in the DB.
+        '401':
+          description: Admins can only update Movies
+        '403':
+          description: Requester forbidden to update this resource
+
+    delete:
+      tags:
+        - Movies
+      description:
+        Delete movie by ID.
+      responses:
+        '200':
+          description: Delete confirmation.
+        '401':
+          description: Only admin users can delete movies.
+        '404':
+          description: Movie was not found in the DB.
+        '403':
+          description: Requester forbidden to delete this resource
+
+  /movies:
+    summary: Represents an individual movie
+    description: >
+      This resource represents an individual movie in the system.
+      Each movie is identified by a numeric `id`.
+    post:
+      tags:
+        - Movies
+      description:
+        Create a new movie.
+      requestBody:
+        description: All new movie data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./movies.json#/definitions/movie
+      responses:
+        '201':
+          description: Movie created
+          content:
+            application/json:
+              schema:
+                $ref: ./movies.json#/definitions/movieCreated
+  
+  /movies/{page}/{limit}/{column}/{order}:
+    parameters:
+      - in: path
+        name: page
+        schema:
+          type: integer
+        required: true
+        description: Numeric page of results
+
+      - in: path
+        name: limit
+        schema:
+          type: integer
+        required: true
+        description: Numeric amount of results to retrieve
+
+      - in: path
+        name: column
+        schema:
+          type: string
+        required: true
+        description: The column which to order the results 
+
+      - in: path
+        name: order
+        schema:
+          type: string
+        required: true
+        description: The order which results are displayed 
+
+    get:
+      tags:
+        - Movies
+      description:
+        Get multiple movies with pagination.
+      responses:
+        '200':
+          description: View of multiple movies. 
+        '404':
+          description: Movies were not found in the DB.
+  
+  /movies/{title}:
+    parameters:
+      - in: path
+        name: title
+        schema:
+          type: string
+        required: true
+        description: Title of the movie 
+    get:
+      tags:
+        - Movies
+      description:
+        Get movie by the title.
+      responses:
+        '200':
+          description: View of the movie record.
+        '404':
+          description: Movie was not found in the DB.
+        
+  /tv/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: Numeric id of the tv show
+    get:
+      tags:
+        - Tv
+      description:
+        Get tv show by id.
+      responses:
+        '200':
+          description: View of a tv shows record.
+        '404':
+          description: Tv show was not found in the DB.
+      
+    put:
+      tags:
+        - Tv
+      description:
+        Update tv show by ID.
+      responses:
+        '200':
+          description: Update confirmation and link to record.
+        '404':
+          description: Tv show was not found in the DB.
+        '401':
+          description: Admins can only update tv shows
+        '403':
+          description: Requester forbidden to update this resource
+
+    delete:
+      tags:
+        - Tv
+      description:
+        Delete tv show by ID.
+      responses:
+        '200':
+          description: Delete confirmation.
+        '401':
+          description: Only admin users can delete tv show.
+        '404':
+          description: Tv show was not found in the DB.
+        '403':
+          description: Requester forbidden to delete this resource
+
+  /tv:
+    summary: Represents an individual tv show
+    description: >
+      This resource represents an individual tv show in the system.
+      Each tv show is identified by a numeric `id`.
+    post:
+      tags:
+        - Tv
+      description:
+        Create a new tv show.
+      requestBody:
+        description: All new tv show data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./tv.json#/definitions/tv
+      responses:
+        '201':
+          description: Tv show created
+          content:
+            application/json:
+              schema:
+                $ref: ./tv.json#/definitions/tvCreated
+  
+  /tv/{page}/{limit}/{column}/{order}:
+    parameters:
+      - in: path
+        name: page
+        schema:
+          type: integer
+        required: true
+        description: Numeric page of results
+
+      - in: path
+        name: limit
+        schema:
+          type: integer
+        required: true
+        description: Numeric amount of results to retrieve
+
+      - in: path
+        name: column
+        schema:
+          type: string
+        required: true
+        description: The column which to order the results 
+
+      - in: path
+        name: order
+        schema:
+          type: string
+        required: true
+        description: The order which results are displayed 
+
+    get:
+      tags:
+        - Tv
+      description:
+        Get multiple tv show with pagination.
+      responses:
+        '200':
+          description: View of multiple tv shows. 
+        '404':
+          description: Tv shows were not found in the DB.
+  
+  /tv/{title}:
+    parameters:
+      - in: path
+        name: title
+        schema:
+          type: string
+        required: true
+        description: Title of the tv show 
+    get:
+      tags:
+        - Tv
+      description:
+        Get tv show by the title.
+      responses:
+        '200':
+          description: View of the tv show record.
+        '404':
+          description: Tv show was not found in the DB.
+  
+  /movieReviews/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: Numeric id of the movie review
+    get:
+      tags:
+        - Movie Reviews
+      description:
+        Get movie review by id.
+      responses:
+        '200':
+          description: View of a movie reviews record 
+        '404':
+          description: Movie review was not found in the DB.
+    put:
+      tags:
+        - Movie Reviews
+      description:
+        Update movie reviews by ID.
+      responses:
+        '200':
+          description: Update confirmation.
+        '404':
+          description: Movie review was not found in the DB.
+        '401':
+          description: Users can only update their own movie reviews
+        '403':
+          description: Requester forbidden to update this resource
+
+    delete:
+      tags:
+        - Movie Reviews
+      description:
+        Delete movie reviews by ID.
+      responses:
+        '200':
+          description: Delete confirmation.
+        '401':
+          description: Only users can delete their own movie reviews.
+        '404':
+          description: Movie review was not found in the DB.
+        '403':
+          description: Requester forbidden to delete this resource
+          
+  /movieReviews:
+    summary: Represents an individual movie review
+    description: >
+      This resource represents an individual movie review in the system.
+      Each movie review is identified by a numeric `id`.
+    post:
+      tags:
+        - Movie Reviews
+      description:
+        Create a new movie review account.
+      requestBody:
+        description: All new movie review data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./movieReviews.json#/definitions/movieReview
+      responses:
+        '201':
+          description: Movie Review created
+          content:
+            application/json:
+              schema:
+                $ref: ./movieReviews.json#/definitions/reviewCreated
+  
+  /tvReviews/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+        description: Numeric id of the tv review
+    get:
+      tags:
+        - Tv Reviews
+      description:
+        Get tv review by id.
+      responses:
+        '200':
+          description: View of a tv reviews record 
+        '404':
+          description: Tv review was not found in the DB.
+    put:
+      tags:
+        - Tv Reviews
+      description:
+        Update tv reviews by ID.
+      responses:
+        '200':
+          description: Update confirmation.
+        '404':
+          description: Tv review was not found in the DB.
+        '401':
+          description: Users can only update their own tv reviews
+        '403':
+          description: Requester forbidden to update this resource
+
+    delete:
+      tags:
+        - Tv Reviews
+      description:
+        Delete tv reviews by ID.
+      responses:
+        '200':
+          description: Delete confirmation.
+        '401':
+          description: Only users can delete their own tv reviews.
+        '404':
+          description: Tv review was not found in the DB.
+        '403':
+          description: Requester forbidden to delete this resource
+          
+  /tvReviews:
+    summary: Represents an individual tv review
+    description: >
+      This resource represents an individual tv review in the system.
+      Each tv review is identified by a numeric `id`.
+    post:
+      tags:
+        - Tv Reviews
+      description:
+        Create a new tv review account.
+      requestBody:
+        description: All new tv review data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./tvReviews.json#/definitions/tvReview
+      responses:
+        '200':
+          description: Tv created
+          content:
+            application/json:
+              schema:
+                $ref: ./tvReviews.json#/definitions/reviewCreated

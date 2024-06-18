@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "tv": {
+      "title": "Tv",
+      "description": "Data to register a new tv show.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "description": "The title of the tv",
+          "type": "string"
+        },
+        "cast": {
+          "description": "The list of ids of actors",
+          "type": "string"
+        },
+        "seasons": {
+          "description": "The amount of season in a tv show",
+          "type": "integer"
+        },
+        "audiencePercentage": {
+          "description": "The percentage of audience reviews",
+          "type": "integer"
+        },
+        "verifiedPercentage": {
+          "description": "The percentage of verified reviews",
+          "type": "integer"
+        },
+        "description": {
+          "description": "The description of the tv show",
+          "type": "string"
+        },
+        "releaseDate": {
+          "description": "The release date of the tv show",
+          "type": "datetime"
+        },
+        "producers": {
+          "description": "The list of director ids",
+          "type": "string"
+        },
+        "coverURL": {
+          "description": "The cover picture of the tv show",
+          "type": "string"
+        }
+      },
+      "required": ["title"],
+      "additionalProperties": false
+    },
+
+    "tvCreated": {
+      "$id": "#tvCreated",
+      "title": "Tv Created",
+      "description": "Confirmation of a successful tv update/creation",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "id of the new/updated tv record",
+          "type": "integer"
+        },
+        "updated": {
+          "description": "Boolean indicator of success",
+          "type": "boolean"
+        },
+        "link": {
+          "description": "Path to retrieve tv record",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

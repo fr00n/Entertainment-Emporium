@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "tvReview": {
+      "title": "Tv Reviews",
+      "description": "Data to register a new tv review",
+      "type": "object",
+      "properties": {
+        "score": {
+          "description": "The score given by the user out of 5",
+          "type": "integer"
+        },
+        "posted": {
+          "description": "The date when the review was posted",
+          "type": "datetime"
+        },
+        "userId": {
+          "description": "The user id of the user making the review",
+          "type": "integer"
+        },
+        "tvId": {
+          "description": "The tv id that the review is about",
+          "type": "integer"
+        },
+        "text": {
+          "description": "The text of the review",
+          "type": "string"
+        },
+        "verified": {
+          "description": "Whether the user is verified",
+          "type": "boolean"
+        },
+        "username": {
+          "description": "The username of the user making the review",
+          "type": "string"
+        }
+      },
+      "required": ["score", "text"],
+      "additionalProperties": false
+    },
+
+    "reviewCreated": {
+      "$id": "#reviewCreated",
+      "title": "Review Created",
+      "description": "Confirmation of a successful review update/creation",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "id of the new/updated review record",
+          "type": "integer"
+        },
+        "updated": {
+          "description": "Boolean indicator of success",
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "user": {
+      "title": "User",
+      "description": "Data to register a new user.",
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "description": "The first name of the user",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "The last name of the user",
+          "type": "string"
+        },
+        "username": {
+          "description": "Unique username of the user",
+          "type": "string"
+        },
+        "password": {
+          "description": "Hashed password of user account",
+          "type": "string"
+        },
+        "avatarURL": {
+          "description": "Profile picture of the user",
+          "type": "string"
+        },
+        "role": {
+          "description": "The role of the user",
+          "type": "string"
+        },
+        "bio": {
+          "description": "Self description of the user",
+          "type": "string"
+        }
+      },
+      "required": ["firstName", "lastName", "username", "password"],
+      "additionalProperties": false
+    },
+
+    "userCreated": {
+      "$id": "#userCreated",
+      "title": "User Created",
+      "description": "Confirmation of a successful user update/creation",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "id of the new/updated user record",
+          "type": "integer"
+        },
+        "updated": {
+          "description": "Boolean indicator of success",
+          "type": "boolean"
+        },
+        "link": {
+          "description": "Path to retrieve user record",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}
+
+
